@@ -1,3 +1,4 @@
+//Imports
 import React from 'react';
 import {
   View,
@@ -23,11 +24,17 @@ import * as firebase from 'firebase';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 
+
+//Initialise firebase connection
 firebase.initializeApp(firebaseConfig);
+//Common references
 var database = firebase.database();  
 var config_ref = database.ref("/config")
 var users_ref = database.ref("/users")
 
+
+//Async fetch function
+//Gets all the active tokens
 async function get_active_tokens() {
   var tokens = [];
   var snapshot = await config_ref.child("/tokens").orderByChild("Active").equalTo(true).once('value');
@@ -38,6 +45,8 @@ async function get_active_tokens() {
   return [];
  }
 
+ //Async fetch function
+ //Checks token is active in case user hasn't update selection
  async function check_token_active(token){
    //Check the token given is active
    //Might be incase someone has cached app and attempts to scan for inactive token
@@ -48,6 +57,9 @@ async function get_active_tokens() {
    return false;
  }
 
+ //Async fetch function
+ //Checks if user has the token
+ // Code: {2: User not found, 1: No token, 0: Has token}
  async function check_user_has_token(token, hash){
    //Default code is 2 when no user is found
    //Possible NFC Tampering
@@ -76,6 +88,15 @@ async function get_active_tokens() {
    return code;
  }
 
+
+ //Sets the token for the user as used
+ function set_token_as_used(token,hash){
+    var target_user = (users_ref.orderByChild("hash").equalTo(hash));
+    target_user.once("child_added", function(snapshot){
+      snapshot.ref.child("tokens").update({ [token] : false});
+    })
+ }
+
 class TokenSelectionPage extends React.Component {
   constructor(props){
     super(props)
@@ -98,6 +119,7 @@ class TokenSelectionPage extends React.Component {
     if(doesExist){
       code = await check_user_has_token(token, person_hash);
       if(code == 0){
+        set_token_as_used(token,person_hash);
         this.setState({scan_success:"Scan Successful!"});
       } else if(code==1){
         this.setState({scan_success:"TOKEN ALREADY USED"});
@@ -134,7 +156,9 @@ class TokenSelectionPage extends React.Component {
             rounded
             primary
             onPress = {()=>this.scan_token(this.state.scan_type, this.state.attendant)}
-            ></Button>
+            >
+              <Text>Scan Token</Text>
+            </Button>
 
         </View> 
       </Container>
@@ -199,6 +223,7 @@ class LoginPage extends React.Component {
           </Item>
           <Item>
           <Input
+          secureTextEntry={true}
           onChangeText={(password) => this.setState({password})}
           placeholder="Password"
           />
