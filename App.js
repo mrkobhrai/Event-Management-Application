@@ -191,15 +191,10 @@ class LoginPage extends React.Component {
 
   loginUser= (email,password) => {
       const { navigate } = this.props.navigation;
-
-      //FOR TESTING:
-      navigate('Token_Selection');//Always simulate successful login
-
       firebase.auth().signInWithEmailAndPassword(email,password
       ).then(
         function(user){
           firebase.database().ref("/users/").orderByChild("hash").equalTo("my_hash").once('value',function(snapshot){
-            //console.log(snapshot.val());
           })
           
           navigate('Token_Selection');
