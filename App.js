@@ -3,11 +3,11 @@ import React from 'react';
 import {
   View,
   Text,
-  Picker
+  Picker,
+  TouchableOpacity
 } from 'react-native';
 
-const firebaseConfig = require('./config.json')
-
+import NfcManager, {NfcEvents } from 'react-native-nfc-manager';
 
 import {
   Container,
@@ -23,6 +23,10 @@ import {
 import * as firebase from 'firebase';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
+
+
+//Import API Keys
+const firebaseConfig = require('./config.json')
 
 
 //Initialise firebase connection
@@ -131,8 +135,14 @@ class TokenSelectionPage extends React.Component {
     }
   }
 
+  navigateNFC = () => {
+    const { navigate } = this.props.navigation;
+    navigate('Test_NFC_Scan');
+  }
+
   render() {
     var token_buttons = [];
+    const { navigate } = this.props.navigation;
     for(item in this.state.tokens){
       token_buttons.push(<Picker.Item label = { this.state.tokens[item] } value = { this.state.tokens[item] } />)
     }
@@ -159,6 +169,7 @@ class TokenSelectionPage extends React.Component {
             >
               <Text>Scan Token</Text>
             </Button>
+            <Button onPress = {()=>this.navigateNFC()}><Text>TO NFC Scan Test</Text></Button>
 
         </View> 
       </Container>
@@ -174,6 +185,8 @@ class LoginPage extends React.Component {
       password:''
     })
   }
+
+
 
   signUpUser = (email,password) => {
     try{
@@ -246,11 +259,112 @@ class LoginPage extends React.Component {
   }
 }
 
+class AppV2 extends React.Component {
+
+  componentDidMount() {
+
+    NfcManager.start();
+
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
+
+      console.warn('tag', tag);
+
+      NfcManager.setAlertMessageIOS('I got your tag!');
+
+      NfcManager.unregisterTagEvent().catch(() => 0);
+
+    });
+
+  }
+
+
+
+  componentWillUnmount() {
+
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
+
+    NfcManager.unregisterTagEvent().catch(() => 0);
+
+  }
+
+
+
+  render() {
+
+    return (
+
+      <View style={{padding: 20}}>
+
+        <Text>NFC Demo</Text>
+
+        <TouchableOpacity 
+
+          style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+
+          onPress={this._test}
+
+        >
+
+          <Text>Test</Text>
+
+        </TouchableOpacity>
+
+
+
+        <TouchableOpacity 
+
+          style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+
+          onPress={this._cancel}
+
+        >
+
+          <Text>Cancel Test</Text>
+
+        </TouchableOpacity>
+
+      </View>
+
+    )
+
+  }
+
+
+
+  _cancel = () => {
+
+    NfcManager.unregisterTagEvent().catch(() => 0);
+
+  } 
+
+
+
+  _test = async () => {
+
+    try {
+
+      await NfcManager.registerTagEvent();
+
+    } catch (ex) {
+
+      console.warn('ex', ex);
+
+      NfcManager.unregisterTagEvent().catch(() => 0);
+
+    }
+
+  }
+
+}
+
+
+
 
 const AppNavigator = createStackNavigator(
     {
         Login: LoginPage,
-        Token_Selection: TokenSelectionPage
+        Token_Selection: TokenSelectionPage,
+        Test_NFC_Scan: AppV2
     },
     {
         initialRouteName: "Login"
