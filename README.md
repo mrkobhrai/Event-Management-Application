@@ -12,6 +12,7 @@ Stored in a database
  yarn add react-native-safe-area-context
  yarn add react-navigation-stack
  yarn add react-native-screens
+ yarn add react-native-nfc-manager
  
  ## Database
  Note that config.json found in the root directory of this repo has been left out.
