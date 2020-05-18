@@ -11,7 +11,7 @@
   },
   "summary": "A NFC module for react native.",
   "source": {
-    "git": "git+https://github.com/whitedogg13/react-native-nfc-manager.git"
+    "git": "https://github.com/whitedogg13/react-native-nfc-manager.git"
   },
   "source_files": "ios/**/*.{h,m}",
   "platforms": {
