@@ -32,7 +32,7 @@ const firebaseConfig = require('./config.json')
 //Initialise firebase connection
 firebase.initializeApp(firebaseConfig);
 //Common references
-var database = firebase.database();  
+var database = firebase.database();
 var config_ref = database.ref("/config")
 var users_ref = database.ref("/users")
 
@@ -111,10 +111,37 @@ class TokenSelectionPage extends React.Component {
       scan_success : ""
     })
   }
-  
+
+  componentDidMount() {
+    NfcManager.start();
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
+      console.warn('tag', tag);
+      NfcManager.setAlertMessageIOS('I got your tag!');
+      NfcManager.unregisterTagEvent().catch(() => 0);
+    });
+
+  }
+
   async componentWillMount(){
     const active_tokens = await get_active_tokens();
     this.setState({tokens : active_tokens});
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
+    NfcManager.unregisterTagEvent().catch(() => 0);
+  }
+
+  _cancel = () => {
+    NfcManager.unregisterTagEvent().catch(() => 0);
+  }
+
+
+
+  _test = async () => {
+    try {
+      await NfcManager.registerTagEvent();
+    } catch (ex) {
+      console.warn('ex', ex);
+      NfcManager.unregisterTagEvent().catch(() => 0);
+    }
   }
 
   async scan_token(token, person_hash){
@@ -133,11 +160,6 @@ class TokenSelectionPage extends React.Component {
     }else{
       this.setState({scan_success:"Inactive token, application restart required"});
     }
-  }
-
-  navigateNFC = () => {
-    const { navigate } = this.props.navigation;
-    navigate('Test_NFC_Scan');
   }
 
   render() {
@@ -169,9 +191,19 @@ class TokenSelectionPage extends React.Component {
             >
               <Text>Scan Token</Text>
             </Button>
-            <Button onPress = {()=>this.navigateNFC()}><Text>TO NFC Scan Test</Text></Button>
-
-        </View> 
+            <TouchableOpacity
+              style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+              onPress={this._test}
+            >
+              <Text>Test</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+              onPress={this._cancel}
+            >
+              <Text>Cancel Test</Text>
+            </TouchableOpacity>
+        </View>
       </Container>
     )
   }
@@ -202,21 +234,21 @@ class LoginPage extends React.Component {
 
   }
 
-  loginUser= (email,password) => {
+  loginUser = (email,password) => {
       const { navigate } = this.props.navigation;
       firebase.auth().signInWithEmailAndPassword(email,password
       ).then(
         function(user){
           firebase.database().ref("/users/").orderByChild("hash").equalTo("my_hash").once('value',function(snapshot){
           })
-          
+
           navigate('Token_Selection');
         }
       ).catch(
         function(error){
           alert(error.toString());
         });
-        
+
   }
 
   render() {
@@ -259,112 +291,11 @@ class LoginPage extends React.Component {
   }
 }
 
-class AppV2 extends React.Component {
-
-  componentDidMount() {
-
-    NfcManager.start();
-
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
-
-      console.warn('tag', tag);
-
-      NfcManager.setAlertMessageIOS('I got your tag!');
-
-      NfcManager.unregisterTagEvent().catch(() => 0);
-
-    });
-
-  }
-
-
-
-  componentWillUnmount() {
-
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
-
-    NfcManager.unregisterTagEvent().catch(() => 0);
-
-  }
-
-
-
-  render() {
-
-    return (
-
-      <View style={{padding: 20}}>
-
-        <Text>NFC Demo</Text>
-
-        <TouchableOpacity 
-
-          style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
-
-          onPress={this._test}
-
-        >
-
-          <Text>Test</Text>
-
-        </TouchableOpacity>
-
-
-
-        <TouchableOpacity 
-
-          style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
-
-          onPress={this._cancel}
-
-        >
-
-          <Text>Cancel Test</Text>
-
-        </TouchableOpacity>
-
-      </View>
-
-    )
-
-  }
-
-
-
-  _cancel = () => {
-
-    NfcManager.unregisterTagEvent().catch(() => 0);
-
-  } 
-
-
-
-  _test = async () => {
-
-    try {
-
-      await NfcManager.registerTagEvent();
-
-    } catch (ex) {
-
-      console.warn('ex', ex);
-
-      NfcManager.unregisterTagEvent().catch(() => 0);
-
-    }
-
-  }
-
-}
-
-
-
 
 const AppNavigator = createStackNavigator(
     {
         Login: LoginPage,
         Token_Selection: TokenSelectionPage,
-        Test_NFC_Scan: AppV2
     },
     {
         initialRouteName: "Login"
