@@ -26,15 +26,16 @@ import { createAppContainer } from 'react-navigation';
 
 
 //Import API Keys
-const firebaseConfig = require('./config.json')
+const firebaseConfig = require('./config.json');
 
 
 //Initialise firebase connection
 firebase.initializeApp(firebaseConfig);
 //Common references
-var database = firebase.database();
-var config_ref = database.ref("/config")
-var users_ref = database.ref("/users")
+database = firebase.database();
+config_ref = database.ref("/config");
+users_ref = database.ref("/users");
+log_ref = database.ref("/logs");
 
 
 //Async fetch function
@@ -47,7 +48,7 @@ async function get_active_tokens() {
     return tokens;
   }
   return [];
- }
+}
 
  //Async fetch function
  //Checks token is active in case user hasn't update selection
@@ -64,7 +65,7 @@ async function get_active_tokens() {
  //Async fetch function
  //Checks if user has the token
  // Code: {2: User not found, 1: No token, 0: Has token}
- async function check_user_has_token(token, hash){
+ async function scan_token(token, hash){
    //Default code is 2 when no user is found
    //Possible NFC Tampering
    var code = 2;
@@ -80,11 +81,16 @@ async function get_active_tokens() {
            //Check the token exists, and if so, get it's value
            if(user["tokens"][token] ){
              //If the user has the token, code is 0 for valid scan
+             set_token_as_used(token, hash);
+             log_action({"Action": "Scanned Token", "Token": token, "Person": user["name"], "Success":true });
              code = 0;
            } else{
              //If the user doesn't have the token, code is 1 for token used
+             log_action({"Action": "Scanned Token", "Token": token, "Person": user["name"], "Success":false, "Failure": "User does not have token" });
              code = 1;
            }
+         }else{
+           log_action({"Action": "Scanned Token", "Token": token, "Person": user["name"], "Success":false, "Failure": "Token doesn't exist" });
          }
        }
      }
@@ -98,7 +104,12 @@ async function get_active_tokens() {
     var target_user = (users_ref.orderByChild("hash").equalTo(hash));
     target_user.once("child_added", function(snapshot){
       snapshot.ref.child("tokens").update({ [token] : false});
+
     })
+ }
+
+ function log_action(log){
+   log_ref.push(log);
  }
 
 class TokenSelectionPage extends React.Component {
@@ -152,9 +163,8 @@ class TokenSelectionPage extends React.Component {
     this.state.scan_success = "";
     doesExist = await check_token_active(token);
     if(doesExist){
-      code = await check_user_has_token(token, person_hash);
+      code = await scan_token(token, person_hash);
       if(code == 0){
-        set_token_as_used(token,person_hash);
         this.setState({scan_success:"Scan Successful!"});
       } else if(code==1){
         this.setState({scan_success:"TOKEN ALREADY USED"});
