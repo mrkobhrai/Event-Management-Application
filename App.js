@@ -116,7 +116,7 @@ class TokenSelectionPage extends React.Component {
     NfcManager.start();
     NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
       console.warn('tag', tag);
-      NfcManager.setAlertMessageIOS('I got your tag!');
+      this.setState({ attendant: tag });
       NfcManager.unregisterTagEvent().catch(() => 0);
     });
 
@@ -125,6 +125,10 @@ class TokenSelectionPage extends React.Component {
   async componentWillMount(){
     const active_tokens = await get_active_tokens();
     this.setState({tokens : active_tokens});
+
+  }
+
+  componentWillUnmount(){
     NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
     NfcManager.unregisterTagEvent().catch(() => 0);
   }
@@ -191,12 +195,14 @@ class TokenSelectionPage extends React.Component {
             >
               <Text>Scan Token</Text>
             </Button>
-            <TouchableOpacity
-              style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+            <Button
+              full
+              rounded
+              primary
               onPress={this._test}
             >
-              <Text>Test</Text>
-            </TouchableOpacity>
+              <Text>Scan NFC</Text>
+            </Button>
             <TouchableOpacity
               style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
               onPress={this._cancel}
