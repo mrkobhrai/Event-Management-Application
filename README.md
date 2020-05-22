@@ -3,23 +3,11 @@ The purpose of this app is to allow tokens to be managed digitally during an eve
 The initial plan is to allow 'hashes' to be scanned from an NFC which will related to a token
 Stored in a database
 
- ## Dependencies
- Node Modules
- - native-base
- - react-native
- - firebase
- - @react-navigation/stack
- - @react-native-community/masked-view
- - react-native-safe-area-context
- - react-navigation-stack
- - react-native-screens
- - react-native-nfc-manager
-
  ## Database
  This application has the backend on a Firebase Realtime Database which it accesses through an API.
  The API key should be stored in the root of the repository as 'config.json'.
  To generate the database json structure, under ./SETUP/generate_token_base, find:
- * generate_tokes.py
+ * generate_tokens.py  
  This python script generates 'database.json'
  This can be imported directory into a Firebase Realtime Database to give the required database structure
  More information on this can be found in 'README.txt' under /SETUP.
@@ -54,10 +42,23 @@ Stored in a database
 
  Run the command:
  - 'yarn add'  
- 
+
  To install all dependencies via yarn.
  If you get 'unrecognized command' or equivalent error, then try:
  - 'npx yarn add'
+
+ ## Dependencies
+ These should be installed via 'yarn add' command
+ Node Modules:
+ - native-base
+ - react-native
+ - firebase
+ - @react-navigation/stack
+ - @react-native-community/masked-view
+ - react-native-safe-area-context
+ - react-navigation-stack
+ - react-native-screens
+ - react-native-nfc-manager
 
  ## Running it on emulators
  ### Android
