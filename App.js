@@ -108,6 +108,7 @@ async function get_active_tokens() {
  }
 
  function log_action(log){
+   log["Timestamp"] = new Date().toLocaleString();
    log_ref.push(log);
  }
 
@@ -124,12 +125,16 @@ class TokenSelectionPage extends React.Component {
 
   componentDidMount() {
     NfcManager.start();
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
-        ndef_payload = Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-        this.setState({ attendant: ndef_payload });
-        this.try_scan_token(this.state.scan_type, this.state.attendant);
-      NfcManager.unregisterTagEvent().catch(() => 0);
-    });
+    try{
+      NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
+          ndef_payload = Ndef.text.decodePayload(tag.ndefMessage[0].payload);
+          this.setState({ attendant: ndef_payload });
+          this.try_scan_token(this.state.scan_type, this.state.attendant);
+        NfcManager.unregisterTagEvent().catch(() => 0);
+      });
+    }catch(error){
+      alert(error);
+    }
 
   }
 
@@ -171,11 +176,15 @@ class TokenSelectionPage extends React.Component {
         this.setState({scan_success:"Scan Successful!"});
       } else if(code==1){
         this.setState({scan_success:"TOKEN ALREADY USED"});
+        alert("This token has already been scanned!");
       } else{
         this.setState({scan_success:"User doesn't exist, sent to help desk ASAP"});
+        alert("This user doesn't exist! Seek assistance");
       }
     }else{
       this.setState({scan_success:"Inactive token, application restart required"});
+      alert("Token is now inactive. Reloading page");
+      componentWillMount();
     }
   }
 
@@ -241,12 +250,13 @@ class LoginPage extends React.Component {
         function(user){
           firebase.database().ref("/users/").orderByChild("hash").equalTo("my_hash").once('value',function(snapshot){
           })
-
-          navigate('Token_Selection');
+          log_action( { "Attempted Login":email, "Successful": true });
+          navigate('Scan Tags');
         }
       ).catch(
         function(error){
           alert(error.toString());
+          log_action( { "Attempted Login":email, "Successful": false, "Error":error });
         });
 
   }
@@ -268,6 +278,7 @@ class LoginPage extends React.Component {
           placeholder="Password"
           />
           </Item>
+
           <Button
             full
             rounded
@@ -275,15 +286,6 @@ class LoginPage extends React.Component {
             onPress = {() => this.loginUser(this.state.email, this.state.password)}
             >
           <Text> Login </Text>
-          </Button>
-
-          <Button
-            full
-            rounded
-            primary
-            onPress = {()=>this.signUpUser(this.state.email, this.state.password)}
-            >
-          <Text> Signup </Text>
           </Button>
         </Form>
       </Container>
@@ -295,7 +297,7 @@ class LoginPage extends React.Component {
 const AppNavigator = createStackNavigator(
     {
         Login: LoginPage,
-        Token_Selection: TokenSelectionPage,
+        'Scan Tags': TokenSelectionPage,
     },
     {
         initialRouteName: "Login"
