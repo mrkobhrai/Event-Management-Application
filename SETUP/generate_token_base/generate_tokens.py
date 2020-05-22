@@ -3,13 +3,15 @@ import string
 import json
 
 HASH_LENGTH = 256
+USER_SIZE = 50
+
 
 CHAR_SET = string.ascii_lowercase \
            + string.ascii_uppercase \
            + string.digits \
            + string.punctuation
 
-USER_SIZE = 50
+
 
 tokens = {"Lunch (Day 1)": True, "Lunch (Day 2)": True, "Breakfast (Day 2)": True, "Dinner (Day 2)": True, "Bar Night (Day 1)": True}
 

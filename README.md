@@ -4,34 +4,80 @@ The initial plan is to allow 'hashes' to be scanned from an NFC which will relat
 Stored in a database
 
  ## Dependencies
- yarn add native-base
- yarn add react-native
- yarn add firebase
- yarn add @react-navigation/stack
- yarn add @react-native-community/masked-view
- yarn add react-native-safe-area-context
- yarn add react-navigation-stack
- yarn add react-native-screens
- yarn add react-native-nfc-manager
- 
+ General
+ - yarn
+ - node.js
+
+ iOS
+ - Homebrew
+ - Cocoapods
+
+ Node Modules
+ - native-base
+ - react-native
+ - firebase
+ - @react-navigation/stack
+ - @react-native-community/masked-view
+ - react-native-safe-area-context
+ - react-navigation-stack
+ - react-native-screens
+ - react-native-nfc-manager
+
  ## Database
- Note that config.json found in the root directory of this repo has been left out.
- This is because it contains an API key.
- To run this project, set up your own database on firebase.
- A script can be found in ./SETUP which will generate a JSON object which you can import.
- Then create a config.json in this folder with your own API keys.
- 
+ This application has the backend on a Firebase Realtime Database which it accesses through an API.
+ The API key should be stored in the root of the repository as 'config.json'.
+ To generate the database json structure, under ./SETUP/generate_token_base, find:
+ * generate_tokes.py
+ This python script generates 'database.json'
+ This can be imported directory into a Firebase Realtime Database to give the required database_structure
+ More information on this can be found in 'README.txt' under /SETUP.
+
+ ## System Environment
+
+ ### Android
+ It might be worth installing react-native-cli globally through npm
+ 'npm install –g react-native-cli'
+
+ ### MacOS
+ Run the following commands in terminal:
+ ~~~
+ cd ios
+ pod install
+ ~~~
+ (If it says 'no podfile', try 'pod init' then 'pod install')
+ Then run:
+ 'cd ..'
+ To go back to the repo root directory
+
+ ### Universal Setup
+ Run the command:
+ 'yarn add'
+ To install all dependencies via yarn.
+ If you get 'unrecognized command' or equivalent error, then try:
+ 'npx yarn add'
+
  ## Running it on emulators
  ### Android
  npx react-native run-android
 
- ### IOS
- Port over to Expo
- Then run yarn ios
- Then scan on IOS
- 
+ ### iOS
+ ONLY WORKS ON MacBooks
+ npx react-native run-android
+
+## Running it on devices
+### iOS
+Note! This has to be done on a MacOS System.
+- Ensure XCode and Command Line Tools are installed!
+- Open './ios/firstApp.xcworkspace'
+- Add the NFC Capability (Requires apple developer license)
+- Plug in iPhone, select this device as output in XCode
+- Build (This may take ages)
+- App should be installed
+- (If app won't open due to untrusted developer error, go to general->device management -> (developer team) -> trust)
+- Open app, should then compile javascript bundle and provide login page
+
  ## Author(s)
  Karan Obhrai
- 
+
  ### README Last Updated
- 14/5/2020 
+ 14/5/2020
