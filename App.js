@@ -24,11 +24,8 @@ import * as firebase from 'firebase';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 
-import { get_active_tokens, check_token_active } from "./lib/tokenHandler"
-
 //Import API Keys
 const firebaseConfig = require('./config.json');
-import ETokenStatus from "./lib/ETokenStatus";
 
 
 //Initialise firebase connection
@@ -39,82 +36,118 @@ config_ref = database.ref("/config");
 users_ref = database.ref("/users");
 log_ref = database.ref("/logs");
 
-import { get_user } from "./lib/dbHandler";
 
 //Async fetch function
-//Checks if user has the token
-async function scan_token(token, userid) {
-  return get_user(userid).once('value').then(parent_snapshot => {
-    if (!parent_snapshot.exists()) return ETokenStatus.UserNotFound;
-    let user = super_snap.val()[0];
-    if (!("tokens" in user)) return ETokenStatus.UserNotFound;
-
-    if (!([token] in user.tokens)) {
-      log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "Token doesn't exist" });
-      return ETokenStatus.UserNotFound;
-    }
-
-    if (user.tokens[token] == null) {
-      log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "User does not have token" });
-      return ETokenStatus.TokenAlreadyUsed;
-    }
-
-    set_token_as_used(token, hash);
-    log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": true });
-    return ETokenStatus.ValidScan;
-  });
+//Gets all the active tokens
+async function get_active_tokens() {
+  var tokens = [];
+  var snapshot = await config_ref.child("/tokens").orderByChild("Active").equalTo(true).once('value');
+  if(snapshot.exists()){
+    tokens = Object.keys(snapshot.val());
+    return tokens;
+  }
+  return [];
 }
 
+ //Async fetch function
+ //Checks token is active in case user hasn't update selection
+ async function check_token_active(token){
+   //Check the token given is active
+   //Might be incase someone has cached app and attempts to scan for inactive token
+   var snapshot = await config_ref.child("/tokens").child("/"+token+"/Active").once('value');
+   if(snapshot.exists()){
+     return snapshot.val()
+   }
+   return false;
+ }
 
-//Sets the token for the user as used
-function set_token_as_used(token, userid) {
-  get_user(userid).once("child_added", function (snapshot) {
-    snapshot.ref.child("tokens").update({ [token]: false });
+ //Async fetch function
+ //Checks if user has the token
+ // Code: {2: User not found, 1: No token, 0: Has token}
+ async function scan_token(token, hash){
+   //Default code is 2 when no user is found
+   //Possible NFC Tampering
+   var code = 2;
+   await users_ref.orderByChild("hash").equalTo(hash).once('value').then(
+     function(super_snap){
+       //Take parent snapshot
+     if(super_snap.exists()){
+       //Check it exists and contains children as a result
+       user = super_snap.val()[0];
+       if("tokens" in user){
+         //Check tokens key is in the user
+         if([token] in user["tokens"]){
+           //Check the token exists, and if so, get it's value
+           if(user["tokens"][token] ){
+             //If the user has the token, code is 0 for valid scan
+             set_token_as_used(token, hash);
+             log_action({"Action": "Scanned Token", "Token": token, "Person": user["name"], "Success":true });
+             code = 0;
+           } else{
+             //If the user doesn't have the token, code is 1 for token used
+             log_action({"Action": "Scanned Token", "Token": token, "Person": user["name"], "Success":false, "Failure": "User does not have token" });
+             code = 1;
+           }
+         }else{
+           log_action({"Action": "Scanned Token", "Token": token, "Person": user["name"], "Success":false, "Failure": "Token doesn't exist" });
+         }
+       }
+     }
+   });
+   return code;
+ }
 
-  })
-}
 
-function log_action(log) {
-  log["Timestamp"] = new Date().toLocaleString();
-  log_ref.push(log);
-}
+ //Sets the token for the user as used
+ function set_token_as_used(token,hash){
+    var target_user = (users_ref.orderByChild("hash").equalTo(hash));
+    target_user.once("child_added", function(snapshot){
+      snapshot.ref.child("tokens").update({ [token] : false});
+
+    })
+ }
+
+ function log_action(log){
+   log["Timestamp"] = new Date().toLocaleString();
+   log_ref.push(log);
+ }
 
 class TokenSelectionPage extends React.Component {
-  constructor(props) {
+  constructor(props){
     super(props)
     this.state = ({
-      tokens: [],
+      tokens:[],
       scan_type: "",
       attendant: "",
-      scan_success: ""
+      scan_success : ""
     })
   }
 
   componentDidMount() {
     NfcManager.start();
-    try {
+    try{
       NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
-        ndef_payload = Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-        this.setState({ attendant: ndef_payload });
-        this.try_scan_token(this.state.scan_type, this.state.attendant);
+          ndef_payload = Ndef.text.decodePayload(tag.ndefMessage[0].payload);
+          this.setState({ attendant: ndef_payload });
+          this.try_scan_token(this.state.scan_type, this.state.attendant);
         NfcManager.unregisterTagEvent().catch(() => 0);
       });
-    } catch (error) {
+    }catch(error){
       alert(error);
     }
 
   }
 
-  async componentWillMount() {
+  async componentWillMount(){
     const active_tokens = await get_active_tokens();
-    this.setState({ tokens: active_tokens });
-    if (active_tokens.length > 0) {
-      this.setState({ scan_type: active_tokens[0] });
-    }
+      this.setState({ tokens: active_tokens });
+      if (active_tokens.length > 0) {
+          this.setState({ scan_type: active_tokens[0] });
+      }
 
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(){
     NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
     NfcManager.unregisterTagEvent().catch(() => 0);
   }
@@ -134,55 +167,51 @@ class TokenSelectionPage extends React.Component {
     }
   }
 
-  try_scan_token(token, person_hash) {
+  async try_scan_token(token, person_hash){
     this.state.scan_success = "";
-    return check_token_active().then(async (doesExist) => {
-      if (!doesExist) {
-        this.setState({ scan_success: "Inactive token, application restart required" });
-        alert("Token is now inactive. Reloading page");
-        componentWillMount();
-        return;
+    doesExist = await check_token_active(token);
+    if(doesExist){
+      code = await scan_token(token, person_hash);
+      if(code == 0){
+        this.setState({scan_success:"Scan Successful!"});
+      } else if(code==1){
+        this.setState({scan_success:"TOKEN ALREADY USED"});
+        alert("This token has already been scanned!");
+      } else{
+        this.setState({scan_success:"User doesn't exist, sent to help desk ASAP"});
+        alert("This user doesn't exist! Seek assistance");
       }
-
-      // Avoiding to go into callback hell by using await here
-      let statusCode = await scan_token(token, person_hash);
-      switch (statusCode) {
-        case ETokenStatus.ValidScan:
-          this.setState({ scan_success: "Scan Successful!" });
-        case ETokenStatus.TokenAlreadyUsed:
-          this.setState({ scan_success: "TOKEN ALREADY USED" });
-          alert("This token has already been scanned!");
-        default:
-          this.setState({ scan_success: "User doesn't exist, sent to help desk ASAP" });
-          alert("This user doesn't exist! Seek assistance");
-      }
-    });
+    }else{
+      this.setState({scan_success:"Inactive token, application restart required"});
+      alert("Token is now inactive. Reloading page");
+      componentWillMount();
+    }
   }
 
   render() {
     var token_buttons = [];
     const { navigate } = this.props.navigation;
-    for (item in this.state.tokens) {
-      token_buttons.push(<Picker.Item label={this.state.tokens[item]} value={this.state.tokens[item]} />)
+    for(item in this.state.tokens){
+      token_buttons.push(<Picker.Item label = { this.state.tokens[item] } value = { this.state.tokens[item] } />)
     }
     return (
       <Container>
         <View>
-          <Text>Currently scanning token: {this.state.scan_type}</Text>
-          <Picker selectedValue={this.state.scan_type} onValueChange={(value, _index) => this.setState({ scan_type: value })}>
-            {token_buttons}
+          <Text>Currently scanning token: { this.state.scan_type }</Text>
+          <Picker selectedValue = { this.state.scan_type } onValueChange={(value,_index)=> this.setState({scan_type:value})}>
+            { token_buttons }
           </Picker>
           <Item>
-            <Text> Person Hash: {this.state.attendant}</Text>
+            <Text> Person Hash: { this.state.attendant }</Text>
           </Item>
-          <Text>Scan Status: {this.state.scan_success}</Text>
-          <Button
-            full
-            rounded
-            primary
-            onPress={this._test} >
-            <Text>Scan NFC</Text>
-          </Button>
+          <Text>Scan Status: { this.state.scan_success }</Text>
+            <Button
+              full
+              rounded
+              primary
+              onPress={this._test} >
+              <Text>Scan NFC</Text>
+            </Button>
         </View>
       </Container>
     )
@@ -190,45 +219,45 @@ class TokenSelectionPage extends React.Component {
 }
 
 class LoginPage extends React.Component {
-  constructor(props) {
+  constructor(props){
     super(props)
     this.state = ({
-      email: '',
-      password: ''
+      email:'',
+      password:''
     })
   }
 
 
 
-  signUpUser = (email, password) => {
-    try {
-      if (this.state.password.length < 6) {
+  signUpUser = (email,password) => {
+    try{
+      if(this.state.password.length<6){
         alert("Passwords must be at least 6 characters in length");
         return;
       }
       firebase.auth().createUserWithEmailAndPassword(email, password);
     }
-    catch (error) {
-      console.log(error.toString());
-    }
+      catch(error){
+        console.log(error.toString());
+      }
 
   }
 
-  loginUser = (email, password) => {
-    const { navigate } = this.props.navigation;
-    firebase.auth().signInWithEmailAndPassword(email, password
-    ).then(
-      function (user) {
-        firebase.database().ref("/users/").orderByChild("hash").equalTo("my_hash").once('value', function (snapshot) {
-        })
-        log_action({ "Attempted Login": email, "Successful": true });
-        navigate('Scan Tags');
-      }
-    ).catch(
-      function (error) {
-        alert(error.toString());
-        log_action({ "Attempted Login": email, "Successful": false, "Error": error });
-      });
+  loginUser = (email,password) => {
+      const { navigate } = this.props.navigation;
+      firebase.auth().signInWithEmailAndPassword(email,password
+      ).then(
+        function(user){
+          firebase.database().ref("/users/").orderByChild("hash").equalTo("my_hash").once('value',function(snapshot){
+          })
+          log_action( { "Attempted Login":email, "Successful": true });
+          navigate('Scan Tags');
+        }
+      ).catch(
+        function(error){
+          alert(error.toString());
+          log_action( { "Attempted Login":email, "Successful": false, "Error":error });
+        });
 
   }
 
@@ -237,47 +266,47 @@ class LoginPage extends React.Component {
       <Container>
         <Form>
           <Item>
-            <Input
-              onChangeText={(email) => this.setState({ email })}
-              placeholder="Email"
-            />
+          <Input
+          onChangeText={(email) => this.setState({email})}
+          placeholder="Email"
+          />
           </Item>
           <Item>
-            <Input
-              secureTextEntry={true}
-              onChangeText={(password) => this.setState({ password })}
-              placeholder="Password"
-            />
+          <Input
+          secureTextEntry={true}
+          onChangeText={(password) => this.setState({password})}
+          placeholder="Password"
+          />
           </Item>
 
           <Button
             full
             rounded
             success
-            onPress={() => this.loginUser(this.state.email, this.state.password)}
-          >
-            <Text> Login </Text>
+            onPress = {() => this.loginUser(this.state.email, this.state.password)}
+            >
+          <Text> Login </Text>
           </Button>
         </Form>
       </Container>
-    )
+      )
   }
 }
 
 
 const AppNavigator = createStackNavigator(
-  {
-    Login: LoginPage,
-    'Scan Tags': TokenSelectionPage,
-  },
-  {
-    initialRouteName: "Login"
-  }
+    {
+        Login: LoginPage,
+        'Scan Tags': TokenSelectionPage,
+    },
+    {
+        initialRouteName: "Login"
+    }
 );
 
 const AppContainer = createAppContainer(AppNavigator);
 export default class App extends React.Component {
-  render() {
+  render(){
     return <AppContainer />;
   }
 }
