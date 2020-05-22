@@ -28,6 +28,7 @@ import { get_active_tokens, check_token_active } from "./lib/tokenHandler"
 
 //Import API Keys
 const firebaseConfig = require('./config.json');
+import ETokenStatus from "./lib/ETokenStatus";
 
 
 //Initialise firebase connection
@@ -41,11 +42,10 @@ log_ref = database.ref("/logs");
 
 //Async fetch function
 //Checks if user has the token
-// Code: {2: User not found, 1: No token, 0: Has token}
 async function scan_token(token, hash) {
-  //Default code is 2 when no user is found
+  //Default is when no user is found
   //Possible NFC Tampering
-  var code = 2;
+  var code = ETokenStatus.UserNotFound;
   await users_ref.orderByChild("hash").equalTo(hash).once('value').then(
     function (super_snap) {
       //Take parent snapshot
@@ -57,14 +57,12 @@ async function scan_token(token, hash) {
           if ([token] in user["tokens"]) {
             //Check the token exists, and if so, get it's value
             if (user["tokens"][token]) {
-              //If the user has the token, code is 0 for valid scan
               set_token_as_used(token, hash);
               log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": true });
-              code = 0;
+              code = ETokenStatus.ValidScan;
             } else {
-              //If the user doesn't have the token, code is 1 for token used
               log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "User does not have token" });
-              code = 1;
+              code = ETokenStatus.TokenAlreadyUsed;
             }
           } else {
             log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "Token doesn't exist" });
@@ -150,9 +148,9 @@ class TokenSelectionPage extends React.Component {
     doesExist = await check_token_active(token);
     if (doesExist) {
       code = await scan_token(token, person_hash);
-      if (code == 0) {
+      if (code == ETokenStatus.ValidScan) {
         this.setState({ scan_success: "Scan Successful!" });
-      } else if (code == 1) {
+      } else if (code == ETokenStatus.TokenAlreadyUsed) {
         this.setState({ scan_success: "TOKEN ALREADY USED" });
         alert("This token has already been scanned!");
       } else {
