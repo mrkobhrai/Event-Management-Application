@@ -47,15 +47,21 @@ async function scan_token(token, hash) {
     if (!parent_snapshot.exists()) return ETokenStatus.UserNotFound;
     let user = super_snap.val()[0];
     if (!("tokens" in user)) return ETokenStatus.UserNotFound;
-    if (user.tokens[token] == null) {
+
+    if (!([token] in user.tokens)) {
       log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "Token doesn't exist" });
       return ETokenStatus.UserNotFound;
+    }
+
+    if (user.tokens[token] == null) {
+      log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "User does not have token" });
+      return ETokenStatus.TokenAlreadyUsed;
     }
 
     set_token_as_used(token, hash);
     log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": true });
     return ETokenStatus.ValidScan;
-  })
+  });
 }
 
 
