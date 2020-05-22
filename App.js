@@ -143,25 +143,29 @@ class TokenSelectionPage extends React.Component {
     }
   }
 
-  async try_scan_token(token, person_hash) {
+  try_scan_token(token, person_hash) {
     this.state.scan_success = "";
-    doesExist = await check_token_active(token);
-    if (doesExist) {
-      code = await scan_token(token, person_hash);
-      if (code == ETokenStatus.ValidScan) {
-        this.setState({ scan_success: "Scan Successful!" });
-      } else if (code == ETokenStatus.TokenAlreadyUsed) {
-        this.setState({ scan_success: "TOKEN ALREADY USED" });
-        alert("This token has already been scanned!");
-      } else {
-        this.setState({ scan_success: "User doesn't exist, sent to help desk ASAP" });
-        alert("This user doesn't exist! Seek assistance");
+    return check_token_active().then(async (doesExist) => {
+      if (!doesExist) {
+        this.setState({ scan_success: "Inactive token, application restart required" });
+        alert("Token is now inactive. Reloading page");
+        componentWillMount();
+        return;
       }
-    } else {
-      this.setState({ scan_success: "Inactive token, application restart required" });
-      alert("Token is now inactive. Reloading page");
-      componentWillMount();
-    }
+
+      // Avoiding to go into callback hell by using await here
+      let statusCode = await scan_token(token, person_hash);
+      switch (statusCode) {
+        case ETokenStatus.ValidScan:
+          this.setState({ scan_success: "Scan Successful!" });
+        case ETokenStatus.TokenAlreadyUsed:
+          this.setState({ scan_success: "TOKEN ALREADY USED" });
+          alert("This token has already been scanned!");
+        default:
+          this.setState({ scan_success: "User doesn't exist, sent to help desk ASAP" });
+          alert("This user doesn't exist! Seek assistance");
+      }
+    });
   }
 
   render() {
