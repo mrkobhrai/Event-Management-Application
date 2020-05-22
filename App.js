@@ -43,34 +43,19 @@ log_ref = database.ref("/logs");
 //Async fetch function
 //Checks if user has the token
 async function scan_token(token, hash) {
-  //Default is when no user is found
-  //Possible NFC Tampering
-  var code = ETokenStatus.UserNotFound;
-  await users_ref.orderByChild("hash").equalTo(hash).once('value').then(
-    function (super_snap) {
-      //Take parent snapshot
-      if (super_snap.exists()) {
-        //Check it exists and contains children as a result
-        user = super_snap.val()[0];
-        if ("tokens" in user) {
-          //Check tokens key is in the user
-          if ([token] in user["tokens"]) {
-            //Check the token exists, and if so, get it's value
-            if (user["tokens"][token]) {
-              set_token_as_used(token, hash);
-              log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": true });
-              code = ETokenStatus.ValidScan;
-            } else {
-              log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "User does not have token" });
-              code = ETokenStatus.TokenAlreadyUsed;
-            }
-          } else {
-            log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "Token doesn't exist" });
-          }
-        }
-      }
-    });
-  return code;
+  return users_ref.orderByChild("hash").equalTo(hash).once('value').then(parent_snapshot => {
+    if (!parent_snapshot.exists()) return ETokenStatus.UserNotFound;
+    let user = super_snap.val()[0];
+    if (!("tokens" in user)) return ETokenStatus.UserNotFound;
+    if (user.tokens[token] == null) {
+      log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": false, "Failure": "Token doesn't exist" });
+      return ETokenStatus.UserNotFound;
+    }
+
+    set_token_as_used(token, hash);
+    log_action({ "Action": "Scanned Token", "Token": token, "Person": user["name"], "Success": true });
+    return ETokenStatus.ValidScan;
+  })
 }
 
 
