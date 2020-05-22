@@ -24,6 +24,8 @@ import * as firebase from 'firebase';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 
+import { get_active_tokens } from "./lib/tokenHandler"
+
 //Import API Keys
 const firebaseConfig = require('./config.json');
 
