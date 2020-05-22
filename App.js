@@ -7,7 +7,7 @@ import {
   TouchableOpacity
 } from 'react-native';
 
-import NfcManager, {NfcEvents } from 'react-native-nfc-manager';
+import NfcManager, { NfcEvents, Ndef } from 'react-native-nfc-manager';
 
 import {
   Container,
@@ -23,7 +23,6 @@ import {
 import * as firebase from 'firebase';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
-
 
 //Import API Keys
 const firebaseConfig = require('./config.json');
@@ -126,8 +125,9 @@ class TokenSelectionPage extends React.Component {
   componentDidMount() {
     NfcManager.start();
     NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
-      console.warn('tag', tag);
-      this.setState({ attendant: tag });
+        ndef_payload = Ndef.text.decodePayload(tag.ndefMessage[0].payload);
+        this.setState({ attendant: ndef_payload });
+        this.try_scan_token(this.state.scan_type, this.state.attendant);
       NfcManager.unregisterTagEvent().catch(() => 0);
     });
 
@@ -135,7 +135,10 @@ class TokenSelectionPage extends React.Component {
 
   async componentWillMount(){
     const active_tokens = await get_active_tokens();
-    this.setState({tokens : active_tokens});
+      this.setState({ tokens: active_tokens });
+      if (active_tokens.length > 0) {
+          this.setState({ scan_type: active_tokens[0] });
+      }
 
   }
 
@@ -159,7 +162,7 @@ class TokenSelectionPage extends React.Component {
     }
   }
 
-  async scan_token(token, person_hash){
+  async try_scan_token(token, person_hash){
     this.state.scan_success = "";
     doesExist = await check_token_active(token);
     if(doesExist){
@@ -186,39 +189,20 @@ class TokenSelectionPage extends React.Component {
       <Container>
         <View>
           <Text>Currently scanning token: { this.state.scan_type }</Text>
-          <Text>Currently scanning RFID: { this.state.attendant }</Text>
           <Picker selectedValue = { this.state.scan_type } onValueChange={(value,_index)=> this.setState({scan_type:value})}>
             { token_buttons }
           </Picker>
           <Item>
-            <Input
-            onChangeText={(attendant) => this.setState({attendant})}
-            placeholder="Attendee's RFID"
-            />
+            <Text> Person Hash: { this.state.attendant }</Text>
           </Item>
           <Text>Scan Status: { this.state.scan_success }</Text>
-          <Button
-            full
-            rounded
-            primary
-            onPress = {()=>this.scan_token(this.state.scan_type, this.state.attendant)}
-            >
-              <Text>Scan Token</Text>
-            </Button>
             <Button
               full
               rounded
               primary
-              onPress={this._test}
-            >
+              onPress={this._test} >
               <Text>Scan NFC</Text>
             </Button>
-            <TouchableOpacity
-              style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
-              onPress={this._cancel}
-            >
-              <Text>Cancel Test</Text>
-            </TouchableOpacity>
         </View>
       </Container>
     )
