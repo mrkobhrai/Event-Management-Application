@@ -4,14 +4,6 @@ The initial plan is to allow 'hashes' to be scanned from an NFC which will relat
 Stored in a database
 
  ## Dependencies
- General
- - yarn
- - node.js
-
- iOS
- - Homebrew
- - Cocoapods
-
  Node Modules
  - native-base
  - react-native
@@ -34,11 +26,12 @@ Stored in a database
 
  ## System Environment
 
- ### Android
- It might be worth installing react-native-cli globally through npm
- 'npm install –g react-native-cli'
 
  ### MacOS
+ Ensure these are installed:
+ - Cocoapods (install using gem)
+
+
  Run the following commands in terminal:
  ~~~
  cd ios
@@ -50,18 +43,28 @@ Stored in a database
  To go back to the repo root directory
 
  ### Universal Setup
+ Ensure these commands are installed:
+ - yarn
+ - node.js
+ - Homebrew
+
+ It might be worth installing react-native-cli globally through npm
+
+ -'npm install –g react-native-cli'
+
  Run the command:
- 'yarn add'
+ - 'yarn add'  
+ 
  To install all dependencies via yarn.
  If you get 'unrecognized command' or equivalent error, then try:
- 'npx yarn add'
+ - 'npx yarn add'
 
  ## Running it on emulators
  ### Android
  npx react-native run-android
 
  ### iOS
- ONLY WORKS ON MacBooks:  
+ ONLY WORKS ON MacOS:  
  npx react-native run-android
 
 ## Running it on devices
