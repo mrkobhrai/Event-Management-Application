@@ -29,7 +29,7 @@ Stored in a database
  To generate the database json structure, under ./SETUP/generate_token_base, find:
  * generate_tokes.py
  This python script generates 'database.json'
- This can be imported directory into a Firebase Realtime Database to give the required database_structure
+ This can be imported directory into a Firebase Realtime Database to give the required database structure
  More information on this can be found in 'README.txt' under /SETUP.
 
  ## System Environment
@@ -61,7 +61,7 @@ Stored in a database
  npx react-native run-android
 
  ### iOS
- ONLY WORKS ON MacBooks
+ ONLY WORKS ON MacBooks:  
  npx react-native run-android
 
 ## Running it on devices
@@ -80,4 +80,4 @@ Note! This has to be done on a MacOS System.
  Karan Obhrai
 
  ### README Last Updated
- 14/5/2020
+ 22/5/2020
