@@ -24,7 +24,7 @@ import * as firebase from 'firebase';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 
-import { get_active_tokens } from "./lib/tokenHandler"
+import { get_active_tokens, check_token_active } from "./lib/tokenHandler"
 
 //Import API Keys
 const firebaseConfig = require('./config.json');
@@ -38,18 +38,6 @@ config_ref = database.ref("/config");
 users_ref = database.ref("/users");
 log_ref = database.ref("/logs");
 
-
-//Async fetch function
-//Checks token is active in case user hasn't update selection
-async function check_token_active(token) {
-  //Check the token given is active
-  //Might be incase someone has cached app and attempts to scan for inactive token
-  var snapshot = await config_ref.child("/tokens").child("/" + token + "/Active").once('value');
-  if (snapshot.exists()) {
-    return snapshot.val()
-  }
-  return false;
-}
 
 //Async fetch function
 //Checks if user has the token
