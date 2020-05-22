@@ -39,11 +39,12 @@ config_ref = database.ref("/config");
 users_ref = database.ref("/users");
 log_ref = database.ref("/logs");
 
+import { get_user } from "./lib/dbHandler";
 
 //Async fetch function
 //Checks if user has the token
-async function scan_token(token, hash) {
-  return users_ref.orderByChild("hash").equalTo(hash).once('value').then(parent_snapshot => {
+async function scan_token(token, userid) {
+  return get_user(userid).once('value').then(parent_snapshot => {
     if (!parent_snapshot.exists()) return ETokenStatus.UserNotFound;
     let user = super_snap.val()[0];
     if (!("tokens" in user)) return ETokenStatus.UserNotFound;
@@ -66,9 +67,8 @@ async function scan_token(token, hash) {
 
 
 //Sets the token for the user as used
-function set_token_as_used(token, hash) {
-  var target_user = (users_ref.orderByChild("hash").equalTo(hash));
-  target_user.once("child_added", function (snapshot) {
+function set_token_as_used(token, userid) {
+  get_user(userid).once("child_added", function (snapshot) {
     snapshot.ref.child("tokens").update({ [token]: false });
 
   })
