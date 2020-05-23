@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B9E8F4CA2A4A8599389FEB665A9B96FF"
-               BuildableName = "libRNGestureHandler.a"
-               BlueprintName = "RNGestureHandler"
+               BlueprintIdentifier = "BD9A27D8398DEB3205D3F8937B0672A0"
+               BuildableName = "libreact-native-safe-area-context.a"
+               BlueprintName = "react-native-safe-area-context"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
