@@ -135,6 +135,9 @@ async function get_active_tokens() {
        fontSize: 20,
        fontWeight: 'bold',
        color: 'white'
+     },
+     last_scan_text:{
+       marginBottom: 10
      }
    }
  );
@@ -222,21 +225,24 @@ class TokenSelectionPage extends React.Component {
     return (
       <Container>
         <View>
-          <Text>Currently scanning token: { this.state.scan_type }</Text>
+          <Text style = { { fontSize:20 } }>Selected Token: { this.state.scan_type }</Text>
           <Picker selectedValue = { this.state.scan_type } onValueChange={(value,_index)=> this.setState({scan_type:value})}>
             { token_buttons }
           </Picker>
-          <Item>
-            <Text> Person Hash: { this.state.attendant }</Text>
-          </Item>
-          <Text>Scan Status: { this.state.scan_success }</Text>
+
           <View style = { token_scan_styles.centered_box }>
             <Button
               style = { token_scan_styles.scan_nfc_button }
-              onPress={this._test} >
+              onPress={ this._test } >
               <Text style= { token_scan_styles.nfc_button_text }>Scan Wristband</Text>
             </Button>
             </View>
+          <Item style = { token_scan_styles.last_scan_text }>
+            <Text> Last Scanned Hash: { this.state.attendant }</Text>
+          </Item>
+          <Item style = { token_scan_styles.last_scan_text }>
+            <Text> Last Scan Result: { this.state.scan_success }</Text>
+          </Item>
         </View>
       </Container>
     )
