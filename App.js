@@ -4,7 +4,8 @@ import {
   View,
   Text,
   Picker,
-  TouchableOpacity
+  StyleSheet,
+  ImageBackground
 } from 'react-native';
 
 import NfcManager, { NfcEvents, Ndef } from 'react-native-nfc-manager';
@@ -218,6 +219,34 @@ class TokenSelectionPage extends React.Component {
   }
 }
 
+const image = { uri: "https://reactjs.org/logo-og.png" };
+
+const login_page_styles = StyleSheet.create({
+  image: {
+    flex: 1,
+    resizeMode: "cover",
+    justifyContent: "center"
+  },
+  inputBox: {
+    color: '#ffffff',
+    fontSize: 15,
+    backgroundColor: 'rgba(52,52,52,0.9)',
+    margin: 10,
+    borderRadius: 10
+  },
+  title :{
+    color: '#ffffff',
+    fontSize: 25,
+    fontWeight: 'bold',
+    margin: '10%',
+    backgroundColor: 'rgba(52,52,52,0.9)',
+    textAlign: 'center',
+    width: '80%',
+    padding: 20,
+    borderRadius: 20
+  }
+});
+
 class LoginPage extends React.Component {
   constructor(props){
     super(props)
@@ -226,8 +255,6 @@ class LoginPage extends React.Component {
       password:''
     })
   }
-
-
 
   signUpUser = (email,password) => {
     try{
@@ -264,11 +291,17 @@ class LoginPage extends React.Component {
   render() {
     return (
       <Container>
+       <ImageBackground source={ require("./assets/login_page_background.jpg") } style={login_page_styles.image}>
+       <Item>
+       <Text style = { login_page_styles.title }>IC Hack 21 - Scanner</Text>
+       </Item>
         <Form>
           <Item>
           <Input
           onChangeText={(email) => this.setState({email})}
           placeholder="Email"
+          placeholderTextColor='#ffffff'
+          style = { login_page_styles.inputBox }
           />
           </Item>
           <Item>
@@ -276,6 +309,8 @@ class LoginPage extends React.Component {
           secureTextEntry={true}
           onChangeText={(password) => this.setState({password})}
           placeholder="Password"
+          placeholderTextColor='#ffffff'
+          style = { login_page_styles.inputBox }
           />
           </Item>
 
@@ -284,10 +319,12 @@ class LoginPage extends React.Component {
             rounded
             success
             onPress = {() => this.loginUser(this.state.email, this.state.password)}
+            style = {{margin : 10}}
             >
           <Text> Login </Text>
           </Button>
         </Form>
+        </ImageBackground>
       </Container>
       )
   }
