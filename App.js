@@ -113,6 +113,32 @@ async function get_active_tokens() {
    log_ref.push(log);
  }
 
+ const token_scan_styles = StyleSheet.create(
+   {
+     centered_box: {
+       justifyContent: 'center',
+       alignItems: 'center',
+       height: '60%',
+       width:'100%',
+       marginTop:'10%',
+       marginBottom:'10%'
+     },
+     scan_nfc_button : {
+       height: '80%',
+       aspectRatio: 1,
+       borderRadius:25,
+       backgroundColor:'navy',
+       padding: 0,
+       justifyContent:'center'
+     },
+     nfc_button_text:{
+       fontSize: 20,
+       fontWeight: 'bold',
+       color: 'white'
+     }
+   }
+ );
+
 class TokenSelectionPage extends React.Component {
   constructor(props){
     super(props)
@@ -156,8 +182,6 @@ class TokenSelectionPage extends React.Component {
   _cancel = () => {
     NfcManager.unregisterTagEvent().catch(() => 0);
   }
-
-
 
   _test = async () => {
     try {
@@ -206,20 +230,20 @@ class TokenSelectionPage extends React.Component {
             <Text> Person Hash: { this.state.attendant }</Text>
           </Item>
           <Text>Scan Status: { this.state.scan_success }</Text>
+          <View style = { token_scan_styles.centered_box }>
             <Button
-              full
-              rounded
-              primary
+              style = { token_scan_styles.scan_nfc_button }
               onPress={this._test} >
-              <Text>Scan NFC</Text>
+              <Text style= { token_scan_styles.nfc_button_text }>Scan Wristband</Text>
             </Button>
+            </View>
         </View>
       </Container>
     )
   }
 }
 
-const image = { uri: "https://reactjs.org/logo-og.png" };
+
 
 const login_page_styles = StyleSheet.create({
   image: {
@@ -293,7 +317,7 @@ class LoginPage extends React.Component {
       <Container>
        <ImageBackground source={ require("./assets/login_page_background.jpg") } style={login_page_styles.image}>
        <Item>
-       <Text style = { login_page_styles.title }>IC Hack 21 - Scanner</Text>
+       <Text style = { login_page_styles.title }>Event Scanner</Text>
        </Item>
         <Form>
           <Item>
@@ -313,7 +337,6 @@ class LoginPage extends React.Component {
           style = { login_page_styles.inputBox }
           />
           </Item>
-
           <Button
             full
             rounded
