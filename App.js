@@ -280,6 +280,8 @@ class LoginPage extends React.Component {
     })
   }
 
+// This function exists. Should have a config for 'signup mode'
+// Probably need an admin user
   signUpUser = (email,password) => {
     try{
       if(this.state.password.length<6){
@@ -296,17 +298,15 @@ class LoginPage extends React.Component {
 
   loginUser = (email,password) => {
       const { navigate } = this.props.navigation;
-      firebase.auth().signInWithEmailAndPassword(email,password
-      ).then(
+      firebase.auth().signInWithEmailAndPassword(email,password)
+      .then(
         function(user){
-          firebase.database().ref("/users/").orderByChild("hash").equalTo("my_hash").once('value',function(snapshot){
-          })
           log_action( { "Attempted Login":email, "Successful": true });
           navigate('Scan Tags');
         }
       ).catch(
         function(error){
-          alert(error.toString());
+          alert("Incorrect username or password");
           log_action( { "Attempted Login":email, "Successful": false, "Error":error });
         });
 
