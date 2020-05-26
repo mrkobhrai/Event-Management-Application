@@ -118,14 +118,12 @@ async function get_active_tokens() {
      centered_box: {
        justifyContent: 'center',
        alignItems: 'center',
-       height: '60%',
+       height: '40%',
        width:'100%',
-       marginTop:'10%',
-       marginBottom:'10%'
      },
      scan_nfc_button : {
-       height: '80%',
-       aspectRatio: 1,
+       height: '50%',
+       width: '80%',
        borderRadius:25,
        backgroundColor:'navy',
        padding: 0,
@@ -137,7 +135,7 @@ async function get_active_tokens() {
        color: 'white'
      },
      last_scan_text:{
-       marginBottom: 10
+       margin: 20
      }
    }
  );
@@ -225,7 +223,9 @@ class TokenSelectionPage extends React.Component {
     return (
       <Container>
         <View>
+	  <Item>
           <Text style = { { fontSize:20 } }>Selected Token: { this.state.scan_type }</Text>
+          </Item>
           <Picker selectedValue = { this.state.scan_type } onValueChange={(value,_index)=> this.setState({scan_type:value})}>
             { token_buttons }
           </Picker>
@@ -268,12 +268,13 @@ const login_page_styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 25,
     fontWeight: 'bold',
-    margin: '10%',
+    marginLeft: '10%',
+    marginRight: '10%',
     backgroundColor: 'rgba(52,52,52,0.9)',
     textAlign: 'center',
     width: '80%',
     padding: 20,
-    borderRadius: 20
+    borderRadius: 10
   }
 });
 
