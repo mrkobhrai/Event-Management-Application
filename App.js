@@ -26,8 +26,7 @@ import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 
 //Import API Keys
-const firebaseConfig = require('./config.json');
-
+const firebaseConfig = require('./json/db_config.json');
 
 //Initialise firebase connection
 firebase.initializeApp(firebaseConfig);
@@ -113,32 +112,7 @@ async function get_active_tokens() {
    log_ref.push(log);
  }
 
- const token_scan_styles = StyleSheet.create(
-   {
-     centered_box: {
-       justifyContent: 'center',
-       alignItems: 'center',
-       height: '40%',
-       width:'100%',
-     },
-     scan_nfc_button : {
-       height: '50%',
-       width: '80%',
-       borderRadius:25,
-       backgroundColor:'navy',
-       padding: 0,
-       justifyContent:'center'
-     },
-     nfc_button_text:{
-       fontSize: 20,
-       fontWeight: 'bold',
-       color: 'white'
-     },
-     last_scan_text:{
-       margin: 20
-     }
-   }
- );
+ const token_scan_styles = StyleSheet.create(require("./json/token_scan_style.json"));
 
 class TokenSelectionPage extends React.Component {
   constructor(props){
@@ -251,32 +225,7 @@ class TokenSelectionPage extends React.Component {
 
 
 
-const login_page_styles = StyleSheet.create({
-  image: {
-    flex: 1,
-    resizeMode: "cover",
-    justifyContent: "center"
-  },
-  inputBox: {
-    color: '#ffffff',
-    fontSize: 15,
-    backgroundColor: 'rgba(52,52,52,0.9)',
-    margin: 10,
-    borderRadius: 10
-  },
-  title :{
-    color: '#ffffff',
-    fontSize: 25,
-    fontWeight: 'bold',
-    marginLeft: '10%',
-    marginRight: '10%',
-    backgroundColor: 'rgba(52,52,52,0.9)',
-    textAlign: 'center',
-    width: '80%',
-    padding: 20,
-    borderRadius: 10
-  }
-});
+const login_page_styles = StyleSheet.create(require("./json/login_page_style"));
 
 class LoginPage extends React.Component {
   constructor(props){
@@ -333,6 +282,7 @@ class LoginPage extends React.Component {
           placeholder="Email"
           placeholderTextColor='#ffffff'
           style = { login_page_styles.inputBox }
+          autoCapitalize = "none"
           />
           </Item>
           <Item>

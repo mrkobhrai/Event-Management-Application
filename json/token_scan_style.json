@@ -1,0 +1,24 @@
+ {
+     centered_box: {
+       justifyContent: 'center',
+       alignItems: 'center',
+       height: '40%',
+       width:'100%',
+     },
+     scan_nfc_button : {
+       height: '50%',
+       width: '80%',
+       borderRadius:25,
+       backgroundColor:'navy',
+       padding: 0,
+       justifyContent:'center'
+     },
+     nfc_button_text:{
+       fontSize: 20,
+       fontWeight: 'bold',
+       color: 'white'
+     },
+     last_scan_text:{
+       margin: 20
+     }
+   }

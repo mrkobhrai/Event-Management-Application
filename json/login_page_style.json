@@ -1,0 +1,26 @@
+{
+  image: {
+    flex: 1,
+    resizeMode: "cover",
+    justifyContent: "center"
+  },
+  inputBox: {
+    color: '#ffffff',
+    fontSize: 15,
+    backgroundColor: 'rgba(52,52,52,0.9)',
+    margin: 10,
+    borderRadius: 10
+  },
+  title :{
+    color: '#ffffff',
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginLeft: '10%',
+    marginRight: '10%',
+    backgroundColor: 'rgba(52,52,52,0.9)',
+    textAlign: 'center',
+    width: '80%',
+    padding: 20,
+    borderRadius: 10
+  }
+}
