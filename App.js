@@ -313,7 +313,7 @@ class LoginPage extends React.Component {
 
 const AppNavigator = createStackNavigator(
     {
-        Login: LoginPage,
+        'Login': LoginPage,
         'Scan Tags': TokenSelectionPage,
     },
     {

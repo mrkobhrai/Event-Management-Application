@@ -2,14 +2,14 @@
   image: {
     flex: 1,
     resizeMode: "cover",
-    justifyContent: "center"
   },
   inputBox: {
     color: '#ffffff',
     fontSize: 15,
     backgroundColor: 'rgba(52,52,52,0.9)',
     margin: 10,
-    borderRadius: 10
+    borderRadius: 10,
+    padding:0
   },
   title :{
     color: '#ffffff',
@@ -21,6 +21,8 @@
     textAlign: 'center',
     width: '80%',
     padding: 20,
-    borderRadius: 10
+    borderRadius: 15,
+    marginTop: 20,
+    marginBottom: 30
   }
 }
