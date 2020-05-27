@@ -5,13 +5,17 @@ Stored in a database
 
  ## Database
  This application has the backend on a Firebase Realtime Database which it accesses through an API.
- The API key should be stored in the root of the repository as 'config.json'.
+ The API key should be stored in the json folder of the repository as 'db_config.json'.
  To generate the database json structure, under ./SETUP/generate_token_base, find:
  * generate_tokens.py  
  This python script generates 'database.json'
  This can be imported directory into a Firebase Realtime Database to give the required database structure
  More information on this can be found in 'README.txt' under /SETUP.
 
+ ## Assets
+ Only one asset is used for this project. It is stored as 'login_page_background.jpg'.  
+ Upload a file like this in the ./assets folder or change the file path specified.
+ 
  ## System Environment
 
 

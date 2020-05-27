@@ -4,3 +4,4 @@ config.json
 SETUP/generate_token_base/.idea/workspace.xml
 SETUP/generate_token_base/database.json
 json/db_config.json
+assets/*
